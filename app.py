@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from tkinter import ttk
 import pandas as pd
 
 # Variables globales para almacenar los DataFrames cargados
@@ -115,17 +116,54 @@ def proceso_dos():
         print(f"Error durante el proceso: {e}")
         messagebox.showerror("Error", f"Error durante el proceso: {e}")
 
+# Función para hacer que la ventana sea movible
+def hacer_ventana_movible(event):
+    root.geometry(f'+{event.x_root}+{event.y_root}')
+
 # Configurar la ventana principal de Tkinter
 root = tk.Tk()
 root.title("Cargar y Exportar CSV")
+root.geometry("400x300")
+root.configure(bg="#2e3f4f")
+
+# Hacer que la ventana sea movible
+root.bind('<B1-Motion>', hacer_ventana_movible)
+
+# Configurar el estilo de la aplicación
+style = ttk.Style()
+style.theme_use('clam')
+
+style.configure("TButton",
+                font=("Helvetica", 12),
+                padding=10,
+                background="#2e3f4f",
+                foreground="#ffffff",
+                borderwidth=1,
+                relief="solid")
+
+style.map("TButton",
+          background=[('active', '#3e5f7f')],
+          foreground=[('active', '#ffffff')])
+
+style.configure("TLabel",
+                font=("Helvetica", 12),
+                background="#2e3f4f",
+                foreground="#ffffff")
+
+style.configure("TFrame",
+                background="#2e3f4f")
+
+# Crear un marco para los botones
+frame = ttk.Frame(root, padding="20")
+frame.pack(fill="both", expand=True)
 
 # Crear el botón para el Proceso Uno
-boton_proceso_uno = tk.Button(root, text="Proceso Uno", command=proceso_uno)
-boton_proceso_uno.pack(pady=20)
+boton_proceso_uno = ttk.Button(frame, text="Proceso Uno", command=proceso_uno)
+boton_proceso_uno.pack(pady=10)
 
 # Crear el botón para el Proceso Dos
-boton_proceso_dos = tk.Button(root, text="Proceso Dos", command=proceso_dos)
-boton_proceso_dos.pack(pady=20)
+boton_proceso_dos = ttk.Button(frame, text="Proceso Dos", command=proceso_dos)
+boton_proceso_dos.pack(pady=10)
 
 # Ejecutar la aplicación de Tkinter
 root.mainloop()
