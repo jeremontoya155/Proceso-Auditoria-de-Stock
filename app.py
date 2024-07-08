@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import pandas as pd
 
-# Variables globales para almacenar el DataFrame cargado
+# Variables globales para almacenar los DataFrames cargados
 df = None
 
 def proceso_uno():
@@ -48,6 +48,57 @@ def proceso_uno():
         print(f"Error durante el proceso: {e}")
         messagebox.showerror("Error", f"Error durante el proceso: {e}")
 
+def proceso_dos():
+    global df
+    try:
+        # Abrir el cuadro de diálogo para seleccionar múltiples archivos CSV
+        archivos_csv = filedialog.askopenfilenames(
+            filetypes=[("CSV files", "*.csv")],
+            title="Selecciona archivos CSV"
+        )
+        
+        # Lista para almacenar los DataFrames
+        dataframes = []
+        
+        # Cargar y combinar los archivos CSV
+        for archivo_csv in archivos_csv:
+            try:
+                temp_df = pd.read_csv(archivo_csv, sep=';', encoding='utf-8')
+            except UnicodeDecodeError:
+                temp_df = pd.read_csv(archivo_csv, sep=';', encoding='ISO-8859-1')
+            
+            dataframes.append(temp_df)
+        
+        # Concatenar los DataFrames y eliminar duplicados basados en 'IdProducto'
+        combined_df = pd.concat(dataframes).drop_duplicates(subset=['IdProducto'])
+        
+        # Mostrar mensaje de éxito
+        messagebox.showinfo("Carga exitosa", "Ya se cargaron y combinaron los CSVs")
+        
+        # Seleccionar las columnas deseadas
+        df_export = combined_df[['IdProducto', 'Codebar', 'Cantidad']]
+        
+        # Convertir todos los valores de Codebar a cadenas y eliminar puntos
+        df_export['Codebar'] = df_export['Codebar'].astype(str).str.replace('.', '', regex=False)
+        
+        # Abrir el cuadro de diálogo para seleccionar la ubicación y nombre del archivo de exportación
+        archivo_txt = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt")],
+            title="Guardar archivo como"
+        )
+        
+        # Exportar el DataFrame a un archivo de texto sin títulos de columna
+        df_export.to_csv(archivo_txt, sep=';', index=False, header=False)
+        
+        # Mostrar mensaje de éxito
+        messagebox.showinfo("Exportación exitosa", "El archivo se ha exportado correctamente")
+    
+    except Exception as e:
+        # Imprimir el error en la consola
+        print(f"Error durante el proceso: {e}")
+        messagebox.showerror("Error", f"Error durante el proceso: {e}")
+
 # Configurar la ventana principal de Tkinter
 root = tk.Tk()
 root.title("Cargar y Exportar CSV")
@@ -55,6 +106,10 @@ root.title("Cargar y Exportar CSV")
 # Crear el botón para el Proceso Uno
 boton_proceso_uno = tk.Button(root, text="Proceso Uno", command=proceso_uno)
 boton_proceso_uno.pack(pady=20)
+
+# Crear el botón para el Proceso Dos
+boton_proceso_dos = tk.Button(root, text="Proceso Dos", command=proceso_dos)
+boton_proceso_dos.pack(pady=20)
 
 # Ejecutar la aplicación de Tkinter
 root.mainloop()
