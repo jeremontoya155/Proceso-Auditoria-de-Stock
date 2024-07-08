@@ -76,6 +76,21 @@ def proceso_dos():
         # Mostrar mensaje de éxito
         messagebox.showinfo("Combinación exitosa", "Se han combinado y eliminado duplicados de los CSV")
 
+        # Seleccionar el archivo Excel que contiene los productos a excluir
+        archivo_excel = filedialog.askopenfilename(
+            filetypes=[("Excel files", "*.xls;*.xlsx")],
+            title="Selecciona un archivo Excel para excluir productos"
+        )
+
+        # Cargar el Excel y obtener los productos a partir de la fila 13 (índice 12)
+        df_excel = pd.read_excel(archivo_excel, skiprows=12)
+
+        # Obtener los IdProductos del Excel
+        idproductos_excel = df_excel['IDProducto']
+
+        # Excluir los productos del DataFrame combinado
+        df_combined = df_combined[~df_combined['IdProducto'].isin(idproductos_excel)]
+
         # Seleccionar las columnas deseadas
         df_export = df_combined[['IdProducto', 'Codebar', 'Cantidad']]
         
