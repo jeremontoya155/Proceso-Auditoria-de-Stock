@@ -38,7 +38,7 @@ def proceso_uno():
         )
         
         # Exportar el DataFrame a un archivo de texto sin títulos de columna
-        df_export.to_csv(archivo_txt, sep=';', index=False, header=False)
+        df_export.to_csv(archivo_txt, sep=';', index=False, header=False, quoting=3) # 3 corresponds to csv.QUOTE_NONE
         
         # Mostrar mensaje de éxito
         messagebox.showinfo("Exportación exitosa", "El archivo se ha exportado correctamente")
@@ -51,32 +51,33 @@ def proceso_uno():
 def proceso_dos():
     global df
     try:
-        # Abrir el cuadro de diálogo para seleccionar múltiples archivos CSV
+        # Lista para almacenar todos los DataFrames cargados
+        dfs = []
+
+        # Abrir cuadros de diálogo para seleccionar múltiples archivos CSV
         archivos_csv = filedialog.askopenfilenames(
             filetypes=[("CSV files", "*.csv")],
-            title="Selecciona archivos CSV"
+            title="Selecciona archivos CSV para combinar"
         )
         
-        # Lista para almacenar los DataFrames
-        dataframes = []
-        
-        # Cargar y combinar los archivos CSV
+        # Cargar cada CSV en un DataFrame y agregarlo a la lista
         for archivo_csv in archivos_csv:
             try:
-                temp_df = pd.read_csv(archivo_csv, sep=';', encoding='utf-8')
+                df_temp = pd.read_csv(archivo_csv, sep=';', encoding='utf-8')
+                dfs.append(df_temp)
             except UnicodeDecodeError:
-                temp_df = pd.read_csv(archivo_csv, sep=';', encoding='ISO-8859-1')
-            
-            dataframes.append(temp_df)
-        
-        # Concatenar los DataFrames y eliminar duplicados basados en 'IdProducto'
-        combined_df = pd.concat(dataframes).drop_duplicates(subset=['IdProducto'])
-        
+                # Si falla, intentar cargar con codificación ISO-8859-1
+                df_temp = pd.read_csv(archivo_csv, sep=';', encoding='ISO-8859-1')
+                dfs.append(df_temp)
+
+        # Combinar todos los DataFrames en uno único, eliminando duplicados por 'IdProducto'
+        df_combined = pd.concat(dfs).drop_duplicates(subset='IdProducto')
+
         # Mostrar mensaje de éxito
-        messagebox.showinfo("Carga exitosa", "Ya se cargaron y combinaron los CSVs")
-        
+        messagebox.showinfo("Combinación exitosa", "Se han combinado y eliminado duplicados de los CSV")
+
         # Seleccionar las columnas deseadas
-        df_export = combined_df[['IdProducto', 'Codebar', 'Cantidad']]
+        df_export = df_combined[['IdProducto', 'Codebar', 'Cantidad']]
         
         # Convertir todos los valores de Codebar a cadenas y eliminar puntos
         df_export['Codebar'] = df_export['Codebar'].astype(str).str.replace('.', '', regex=False)
@@ -89,7 +90,7 @@ def proceso_dos():
         )
         
         # Exportar el DataFrame a un archivo de texto sin títulos de columna
-        df_export.to_csv(archivo_txt, sep=';', index=False, header=False)
+        df_export.to_csv(archivo_txt, sep=';', index=False, header=False, quoting=3) # 3 corresponds to csv.QUOTE_NONE
         
         # Mostrar mensaje de éxito
         messagebox.showinfo("Exportación exitosa", "El archivo se ha exportado correctamente")
